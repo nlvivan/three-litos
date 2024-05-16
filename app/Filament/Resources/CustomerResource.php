@@ -26,6 +26,11 @@ class CustomerResource extends Resource
                     ->required()
                     ->columnSpanFull()
                     ->maxLength(255),
+                Forms\Components\TextInput::make('email')
+                    ->email()
+                    ->required()
+                    ->columnSpanFull()
+                    ->maxLength(255),
                 Forms\Components\Textarea::make('address')
                     ->columnSpanFull()
                     ->maxLength(255),

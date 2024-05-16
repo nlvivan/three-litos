@@ -31,22 +31,30 @@ class ProductResource extends Resource
                     ->searchable()
                     ->preload()
                     ->required(),
+                Forms\Components\Select::make('batch_id')
+                    ->relationship('batch', 'batch_number')
+                    ->searchable()
+                    ->preload()
+                    ->required(),
+
                 Forms\Components\TextInput::make('item_code')
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\DatePicker::make('expiry_date'),
-                Forms\Components\Textarea::make('description')
-                    ->columnSpanFull(),
-                Forms\Components\TextInput::make('sku')
-                    ->label('SKU')
-                    ->maxLength(255),
                 Forms\Components\TextInput::make('price')
                     ->required()
                     ->numeric()
                     ->prefix('₱'),
+                Forms\Components\DatePicker::make('expiry_date'),
+                Forms\Components\Textarea::make('description')
+                    ->columnSpanFull(),
+                Forms\Components\FileUpload::make('image_url')
+                    ->label('Image')
+                    ->directory('product_images')
+                    ->columnSpanFull(),
+
             ]);
     }
 
@@ -54,15 +62,14 @@ class ProductResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\ImageColumn::make('image_url')
+                    ->label('Image'),
                 Tables\Columns\TextColumn::make('category.name')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('item_code')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('sku')
-                    ->label('SKU')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('price')
                     ->money('PHP')
