@@ -33,7 +33,7 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user(),
-                'cartCount' => $request->user()->carts()->count(),
+                'cartCount' => $request->user() ? $request->user()->carts()->count() : 0,
             ],
         ];
     }
