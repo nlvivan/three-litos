@@ -49,9 +49,9 @@ class OrderResource extends Resource
                 Forms\Components\TextInput::make('amount_paid')
                     ->live()
                     ->afterStateUpdated(function ($state, Set $set, Get $get,) {
-                        if($state < $get('total_amount')) {
-                            abort(422, 'Invalid Amount');
-                        }
+                        // if($state < $get('total_amount')) {
+                        //     abort(422, 'Invalid Amount');
+                        // }
 
                         $change =  $state - $get('total_amount');
                         $set('change', $change);
