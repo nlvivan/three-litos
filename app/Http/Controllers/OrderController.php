@@ -18,7 +18,11 @@ class OrderController extends Controller
     {
         $user = auth()->user();
 
-        return Inertia::render('Orders/Index');
+        $orders = $user->orders()->get();
+
+        return Inertia::render('Orders/Index', [
+            'orders' => $orders
+        ]);
     }
 
     public function store(Request $request)
@@ -32,6 +36,7 @@ class OrderController extends Controller
         ]);
 
         $user = auth()->user();
+        $users = User::role(['Staff', 'Admin'])->get();
         $dateTime = Carbon::createFromFormat('H:i', data_get($data, 'time_to_pick_up'));
         $dateTime->setDate(now()->year, now()->month, now()->day);
 
@@ -48,7 +53,7 @@ class OrderController extends Controller
 
         foreach ($data['carts'] as $orderItem) {
             $product = Product::findOrFail($orderItem['product_id']);
-            $productStock = $product->stock->stock;
+            $productStock = $product?->stock?->stock;
 
             $amount = $orderItem['quantity'] * $product->price;
 
@@ -66,6 +71,22 @@ class OrderController extends Controller
             $product->stock()->update([
                 'stock' => $productStock - $orderItem['quantity'],
             ]);
+           
+
+            $product = $product->fresh();
+
+            if($product->stock->stock < $product->stock->critical_stock) {
+                \Filament\Notifications\Notification::make()
+                    ->title("{$product->name} is in low stock")
+                    ->warning()
+                    ->icon('heroicon-o-exclamation-circle')
+                    ->actions([
+                        Action::make('markAsUnread')
+                            ->button()
+                            ->markAsUnread(),
+                    ])
+                    ->sendToDatabase($users);
+            }
 
             Cart::find($orderItem['id'])->delete();
         }
@@ -75,7 +96,7 @@ class OrderController extends Controller
             'total_amount' => $totalAmount,
         ]);
 
-        $users = User::role(['Staff', 'Admin'])->get();
+        
 
         \Filament\Notifications\Notification::make()
             ->title("New Order received ({$user->name})")
@@ -88,5 +109,12 @@ class OrderController extends Controller
             ->sendToDatabase($users);
 
         return redirect()->back();
+    }
+
+    public function show(Order $order)
+    {
+        return Inertia::render('Orders/View', [
+            'order' => $order->load(['orderItems', 'orderItems.product'])
+        ]);
     }
 }

@@ -54,7 +54,8 @@ const showingNavigationDropdown = ref(false);
                                     >
                                         {{ $page.props.auth?.cartCount }}
                                     </span>
-                                    <NavLink
+                                </NavLink>
+                                <NavLink
                                         :href="route('orders.index')"
                                         :active="
                                             route().current('orders.index')
@@ -62,7 +63,6 @@ const showingNavigationDropdown = ref(false);
                                     >
                                         Orders
                                     </NavLink>
-                                </NavLink>
                             </div>
                         </div>
 
