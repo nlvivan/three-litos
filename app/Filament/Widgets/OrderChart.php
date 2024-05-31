@@ -8,16 +8,16 @@ class OrderChart extends ChartWidget
 {
     protected static ?string $heading = 'Sales';
 
-    protected static ?int $sort = 1;
+    protected static ?int $sort = 4;
 
-    protected int | string | array $columnSpan = 'full';
+    // protected int | string | array $columnSpan = 'full';
 
     protected function getData(): array
     {
         return [
             'datasets' => [
                 [
-                    'label' => 'SALES',
+                    'label' => 'Yearly Sales',
                     'data' => [0, 10, 5, 2, 21, 32, 45, 74, 65, 45, 77, 89],
                 ],
             ],
@@ -28,5 +28,10 @@ class OrderChart extends ChartWidget
     protected function getType(): string
     {
         return 'line';
+    }
+
+    public static function canView(): bool
+    {
+        return auth()->user()->hasRole('Admin');
     }
 }

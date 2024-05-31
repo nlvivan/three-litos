@@ -2,22 +2,18 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\Customer;
-use App\Models\Order;
-use App\Models\Product;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
-class ProductOverview extends BaseWidget
+class SalesOverview extends BaseWidget
 {
-
-    protected static ?int $sort = 2;
+    protected static ?int $sort = 1;
     protected function getStats(): array
     {
         return [
-            Stat::make('Product Daily Purchased', '10'),
-            Stat::make('Product Weekly Purchased', '42'),
-            Stat::make('Product Monthly Purchased', '400'),
+            Stat::make('Daily Sales', '₱ 10, 000'),
+            Stat::make('Weekly Sales', '₱ 10, 000'),
+            Stat::make('Monthly Sales', '₱ 10, 000'),
         ];
     }
 
