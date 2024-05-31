@@ -3,19 +3,15 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\OrderResource\Pages;
-use App\Filament\Resources\OrderResource\RelationManagers;
 use App\Filament\Resources\OrderResource\RelationManagers\OrderItemsRelationManager;
 use App\Models\Order;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 
 class OrderResource extends Resource
 {
@@ -29,45 +25,60 @@ class OrderResource extends Resource
     {
         return $form
             ->schema([
-                Section::make('Order')
-                ->schema([
-                    Forms\Components\TextInput::make('order_number')
-                ->disabled()
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\Select::make('user_id')
-                ->disabled()
-                    ->relationship('user', 'name'),
-                Forms\Components\TextInput::make('total_amount')
-                    ->live()
-                    ->disabled()
-                    ->required()
-                    ->numeric(),
-                Forms\Components\DateTimePicker::make('time_to_pick_up')
-                ->disabled()
-                    ->required(),
-                Forms\Components\TextInput::make('amount_paid')
-                    ->live()
-                    ->afterStateUpdated(function ($state, Set $set, Get $get,) {
-                        // if($state < $get('total_amount')) {
-                        //     abort(422, 'Invalid Amount');
-                        // }
+                Forms\Components\Group::make()
+                    ->schema([
+                        Forms\Components\Section::make()
+                            ->schema([
+                                Forms\Components\TextInput::make('order_number')
+                                    ->hiddenOn('create')
+                                    ->disabled()
+                                    ->required()
+                                    ->maxLength(255),
+                                Forms\Components\Select::make('user_id')
+                                    ->hiddenOn('create')
+                                    ->disabled()
+                                    ->relationship('user', 'name'),
+                                Forms\Components\DateTimePicker::make('time_to_pick_up')
+                                    ->hiddenOn('create')
+                                    ->disabled(),
+                                Forms\Components\TextInput::make('amount_paid')
+                                    ->hiddenOn('create')
+                                    ->live(debounce: 300)
+                                    ->afterStateUpdated(function ($state, Set $set, Get $get, Order $order) {
+                                        // if($state < $get('total_amount')) {
+                                        //     abort(422, 'Invalid Amount');
+                                        // }
 
-                        $change =  $state - $get('total_amount');
-                        $set('change', $change);
-                    })
-                    ->numeric(),
-                Forms\Components\TextInput::make('change')
-                    ->disabled()
-                    ->numeric(),
-                    Forms\Components\Select::make('status')
-                    ->options([
-                        'pending' => 'Pending',
-                        'completed' => 'Completed',
+                                        $change = $state - $order->totalAmountSum();
+                                        $set('change', $change);
+                                    })
+                                    ->numeric(),
+                                Forms\Components\TextInput::make('change')
+                                    ->hiddenOn('create')
+                                    ->disabled()
+                                    ->numeric(),
+                                Forms\Components\Select::make('status')
+                                    ->options([
+                                        'pending' => 'Pending',
+                                        'completed' => 'Completed',
+                                    ]),
+                            ]),
+                    ]),
+                Forms\Components\Group::make()
+                    ->schema([
+                        Forms\Components\Section::make()
+                            ->schema([
+                                Forms\Components\Placeholder::make('created_at')
+                                    ->label('Created at')
+                                    ->content(fn (Order $record): ?string => $record->created_at?->diffForHumans()),
+                                Forms\Components\Placeholder::make('payments_count')
+                                    ->label('Total payments')
+                                    ->content(fn (Order $record) => $record->totalAmountSum()),
+                            ]),
                     ])
-                ])
-                
-                
+                    ->columnSpan(['lg' => 1])
+                    ->hiddenOn('create'),
+
             ]);
     }
 
